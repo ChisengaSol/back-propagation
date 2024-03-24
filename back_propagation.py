@@ -1,47 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
-# generate data
-var = 0.2
-n = 800
-class_0_a = var * np.random.randn(n//4,2)
-class_0_b =var * np.random.randn(n//4,2) + (2,2)
-
-class_1_a = var* np.random.randn(n//4,2) + (0,2)
-class_1_b = var * np.random.randn(n//4,2) +  (2,0)
-
-X = np.concatenate([class_0_a, class_0_b,class_1_a,class_1_b], axis =0)
-Y = np.concatenate([np.zeros((n//2,1)), np.ones((n//2,1))])
-X.shape, Y.shape
-
-# shuffle the data
-rand_perm = np.random.permutation(n)
-
-X = X[rand_perm, :]
-Y = Y[rand_perm, :]
-
-X = X.T
-Y = Y.T
-X.shape, Y.shape
-
-# train test split
-ratio = 0.8
-X_train = X [:, :int (n*ratio)]
-Y_train = Y [:, :int (n*ratio)]
-
-X_test = X [:, int (n*ratio):]
-Y_test = Y [:, int (n*ratio):]
-
-X_train.shape
-
-plt.scatter(X_train[0,:], X_train[1,:], c=Y_train[0,:])
-plt.show()
-
-
 class BackPropagation:
-    def __init__(self):
-        self.h0 = 2
-        self.h1 = 10
+    """h1 is the number of inputs and h2 is the number 
+        of nodes in the hidden layer"""
+    def __init__(self,h1,h2):
+        self.h0 = h1
+        self.h1 = h2
         self.h2 = 1
     def sigmoid(self, z):
         return 1/(1 + np.exp(-z))
@@ -109,8 +73,8 @@ class BackPropagation:
         plt.figure()
         plt.scatter(X_[0,:], X_[1,:], c= A2)
         plt.show()
-
-    def train(self):
+    
+    def train(self,x_train,y_train,x_test,y_test):
         ## Training loop
         alpha = 0.001
         W1, W2, b1, b2 = self.init_params()
@@ -119,17 +83,17 @@ class BackPropagation:
         test_loss = []
         for i in range(n_epochs):
             ## forward pass
-            A2, Z2, A1, Z1 = self.forward_pass(X_train, W1,W2, b1, b2)
+            A2, Z2, A1, Z1 = self.forward_pass(x_train, W1,W2, b1, b2)
             ## backward pass
-            dW1, dW2, db1, db2 = self.backward_pass(X_train,Y_train, A2, Z2, A1, Z1, W1, W2, b1, b2)
+            dW1, dW2, db1, db2 = self.backward_pass(x_train,y_train, A2, Z2, A1, Z1, W1, W2, b1, b2)
             ## update parameters
             W1, W2, b1, b2 = self.update(W1, W2, b1, b2,dW1, dW2, db1, db2, alpha)
 
             ## save the train loss
-            train_loss.append(self.loss(A2, Y_train))
+            train_loss.append(self.loss(A2, y_train))
             ## compute test loss
-            A2, Z2, A1, Z1 = self.forward_pass(X_test, W1, W2, b1, b2)
-            test_loss.append(self.loss(A2, Y_test))
+            A2, Z2, A1, Z1 = self.forward_pass(x_test, W1, W2, b1, b2)
+            test_loss.append(self.loss(A2, y_test))
 
             ## plot boundary
             if i %1000 == 0:
@@ -139,15 +103,10 @@ class BackPropagation:
         plt.plot(train_loss)
         plt.plot(test_loss)
 
-        y_pred = self.predict(X_train, W1, W2, b1, b2)
-        train_accuracy = self.accuracy(y_pred, Y_train)
+        y_pred = self.predict(x_train, W1, W2, b1, b2)
+        train_accuracy = self.accuracy(y_pred, y_train)
         print ("train accuracy :", train_accuracy)
 
-        y_pred = self.predict(X_test, W1, W2, b1, b2)
-        test_accuracy = self.accuracy(y_pred, Y_test)
+        y_pred = self.predict(x_test, W1, W2, b1, b2)
+        test_accuracy = self.accuracy(y_pred, y_test)
         print ("test accuracy :", test_accuracy)
-
-if __name__ == '__main__':
-    bp = BackPropagation()
-    bp.train()
-
